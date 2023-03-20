@@ -22,7 +22,10 @@ class DistanceAPIClient:
         headers = {
         'Authorization': self.api_key
         }
-        data = {"coordinates": points}
+        data = {
+            "coordinates": points,
+            "instructions": "false"
+        }
         req_url_prep = 'https://api.openrouteservice.org/v2/directions/{profile}/gpx'
         req_url = req_url_prep.format(profile = self.profile)
         response = requests.post(req_url, headers=headers, json=data)

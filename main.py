@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 import networkx as nx
 import matplotlib.pyplot as plt
 import os
+import re
 load_dotenv()
 
 def load_xml():
@@ -23,13 +24,22 @@ def res_points(res, points):
     print(result_points)
     return result_points
 
+def write_result(resulting_points):
+    d = DistanceAPIClient(os.getenv("API_KEY"), 'foot-walking')
+    res_gpx = d.generate_result_path(resulting_points)
+    res_gpx = re.sub(r'</gpx>$', '', res_gpx)
+    for point in resulting_points[:-1]:
+        wpt_prep = '<wpt lat="{lat}" lon="{lon}"></wpt>'
+        wpt = wpt_prep.format(lat=point[1], lon=point[0])
+        res_gpx += wpt
+    res_gpx += "</gpx>"
+    with open('output/result.gpx', 'w') as file:
+        file.write(res_gpx)
+
 
 points = load_xml()
 p = Pathfinder()
 graph = p.create_graph(points)
 res = p.brute_force_tsp(graph)
 resulting_points = res_points(res, points)
-d = DistanceAPIClient(os.getenv("API_KEY"), 'foot-walking')
-res_gpx = d.generate_result_path(resulting_points)
-with open('output/result.gpx', 'w') as file:
-    file.write(res_gpx)
+write_result(resulting_points)
