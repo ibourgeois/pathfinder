@@ -1,11 +1,13 @@
-import itertools
+import itertools, os
 import networkx as nx
 from src.DistanceAPIClient import DistanceAPIClient
-import os
 
 class Pathfinder:
 
     def create_graph(self, points):
+        """
+        create_graph ... Function creates a weighted graph from given set of points.
+        """
         distance_api = DistanceAPIClient(os.getenv("API_KEY"), 'foot-walking')
         graph = nx.Graph()
         for i, point in enumerate(points):
@@ -13,9 +15,11 @@ class Pathfinder:
         for u in graph.nodes():
             for v in graph.nodes():
                 if u < v:
-                    path = distance_api.get_path(graph.nodes[u]['pos'][0], graph.nodes[u]['pos'][1], graph.nodes[v]['pos'][0], graph.nodes[v]['pos'][1])
-                    weight = path['features'][0]['properties']['segments'][0]['distance']
-                    # weight = distance_api.random_path()
+                    weight = distance_api.get_distance(
+                        graph.nodes[u]['pos'][0],
+                        graph.nodes[u]['pos'][1],
+                        graph.nodes[v]['pos'][0],
+                        graph.nodes[v]['pos'][1])
                     txt = "The distance from node {} to node {} is {}."
                     print(txt.format(u, v, weight))
                     graph.add_edge(u, v, weight=weight)
@@ -23,6 +27,10 @@ class Pathfinder:
 
 
     def brute_force_tsp(self, graph):
+        """
+        brute_force_tsp ... Function solves the traveling salesman problem for
+            given weighted graph using the brute force method.
+        """
         # Generate all possible permutations of node indices
         nodes_count = graph.number_of_nodes()
         node_indices = range(nodes_count)

@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="https://mapy.cz/">
-	<wpt lat="49.206677" lon="16.605728">
-		<name>bod5</name>
+	<wpt lat="49.199500" lon="16.596262">
+		<name>7</name>
 	</wpt>
-	<wpt lat="49.207589" lon="16.608298">
-		<name>bod4</name>
+	<wpt lat="49.191578" lon="16.596198">
+		<name>6</name>
 	</wpt>
-	<wpt lat="49.205349" lon="16.608185">
-		<name>bod3</name>
+	<wpt lat="49.195182" lon="16.584654">
+		<name>5</name>
 	</wpt>
-	<wpt lat="49.206054" lon="16.609060">
-		<name>bod2</name>
+	<wpt lat="49.194235" lon="16.607077">
+		<name>4</name>
 	</wpt>
-	<wpt lat="49.204382" lon="16.606715">
-		<name>bod1</name>
+	<wpt lat="49.201533" lon="16.600125">
+		<name>3</name>
+	</wpt>
+	<wpt lat="49.200538" lon="16.603402">
+		<name>2</name>
+	</wpt>
+	<wpt lat="49.202725" lon="16.597695">
+		<name>1</name>
 	</wpt>
 </gpx>
 
