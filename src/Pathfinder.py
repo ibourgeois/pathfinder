@@ -1,8 +1,11 @@
 import itertools, os
 import networkx as nx
 from src.DistanceAPIClient import DistanceAPIClient
+from PyQt5.QtCore import QObject, pyqtSignal
 
-class Pathfinder:
+class Pathfinder(QObject):
+
+    graph_progress_signal = pyqtSignal(str, list)
 
     def create_graph(self, points):
         """
@@ -20,8 +23,11 @@ class Pathfinder:
                         graph.nodes[u]['pos'][1],
                         graph.nodes[v]['pos'][0],
                         graph.nodes[v]['pos'][1])
+                    points = [[float(graph.nodes[u]['pos'][0]), float(graph.nodes[u]['pos'][1])], [float(graph.nodes[v]['pos'][0]), float(graph.nodes[v]['pos'][1])]]
                     txt = "The distance from node {} to node {} is {}."
-                    print(txt.format(u, v, weight))
+                    message = txt.format(u, v, weight)
+                    self.graph_progress_signal.emit(message, points)
+                    # print(message)
                     graph.add_edge(u, v, weight=weight)
         return graph
 
