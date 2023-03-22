@@ -11,6 +11,8 @@ import os, random
 import sys
 from dotenv import load_dotenv
 
+from threading import *
+
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -43,7 +45,7 @@ class Window(QMainWindow):
         self.compute_button = QPushButton("compute", self)
         self.compute_button.setEnabled(False)
         self.compute_button.setGeometry(120, 70, 100, 40)
-        self.compute_button.clicked.connect(self.compute)
+        self.compute_button.clicked.connect(self.compute_thread)
 
 
         self.plot_button = QPushButton("plot", self)
@@ -64,9 +66,18 @@ class Window(QMainWindow):
         self.plot(self.input_points)
         self.gpx_label.setText(text)
 
+    def compute_thread(self):
+        thread1 = Thread(target=self.compute)
+        thread1.start()
+
+    def update_graph_progress(self, progress):
+        self.gpx_label.setText(str(progress))
+
     def compute(self):
         print("Creating weighted graph...")
+        self.pathfinder.graph_progress_signal.connect(self.update_graph_progress)
         graph = self.pathfinder.create_graph(self.input_points)
+        self.pathfinder.graph_progress_signal.disconnect(self.update_graph_progress)
         print("Solving the TSP...")
         result = self.pathfinder.brute_force_tsp(graph)
         print("Preparing result...")

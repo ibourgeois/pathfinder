@@ -24,7 +24,6 @@ class DistanceAPIClient:
             print(response.text)
             raise SrystemExit(e)
         path = json.loads(response.text)
-        print("log")
         return path['features'][0]['properties']['segments'][0]['distance']
 
     def get_random_distance(self):
