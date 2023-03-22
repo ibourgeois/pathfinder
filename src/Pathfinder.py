@@ -5,7 +5,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 class Pathfinder(QObject):
 
-    graph_progress_signal = pyqtSignal(float)
+    graph_progress_signal = pyqtSignal(str, list)
 
     def create_graph(self, points):
         """
@@ -23,9 +23,11 @@ class Pathfinder(QObject):
                         graph.nodes[u]['pos'][1],
                         graph.nodes[v]['pos'][0],
                         graph.nodes[v]['pos'][1])
-                    self.graph_progress_signal.emit(weight)
+                    points = [[float(graph.nodes[u]['pos'][0]), float(graph.nodes[u]['pos'][1])], [float(graph.nodes[v]['pos'][0]), float(graph.nodes[v]['pos'][1])]]
                     txt = "The distance from node {} to node {} is {}."
-                    print(txt.format(u, v, weight))
+                    message = txt.format(u, v, weight)
+                    self.graph_progress_signal.emit(message, points)
+                    # print(message)
                     graph.add_edge(u, v, weight=weight)
         return graph
 
