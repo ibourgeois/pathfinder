@@ -29,12 +29,16 @@ class Window(QMainWindow):
         self.b = (0.0, 1.73, 2.93, 3.61, 3.99, 3.99, 3.61, 2.93, 1.73, 0.45, -0.85, -2.0, -2.93, -3.61, -3.99, -3.99, -3.61, -2.93, -1.73, 0)
         self.plot()
 
-        self.pathfinder = Pathfinder()
-        self.distance_api_client = DistanceAPIClient(os.getenv("API_KEY"), 'foot-walking')
-        self.app = App()
+        if os.getenv("API_KEY") is None:
+            self.gpx_label.setText("API_KEY not found. Please check if the .env file exists and the API_KEY variable is set to valid key to OpenRouteService API.")
+            self.load_file_button.setEnabled(False)
+        else:
+            self.pathfinder = Pathfinder()
+            self.distance_api_client = DistanceAPIClient(os.getenv("API_KEY"), 'foot-walking')
+            self.app = App()
 
     def UiComponents(self):
-        title_label = QLabel("This is Pathfinder. Start with importing the gpx file.", self)
+        title_label = QLabel("This is Pathfinder. Start with importing the gpx file.\n If the window \"freezes\" while creating the graph, don't panic. The API has requests per minute limit, so we are just waiting 60 seconds to renew the limit.", self)
         title_label.setGeometry(10, 10, 600, 40)
 
         self.gpx_label = QLabel("", self)
@@ -42,11 +46,47 @@ class Window(QMainWindow):
 
         self.load_file_button = QPushButton("load gpx", self)
         self.load_file_button.setGeometry(10, 70, 80, 40)
+        self.load_file_button.setStyleSheet("""
+            QPushButton::disabled {
+                background-color: #F44336;
+                color: #E7E7E7;
+                border: 2px solid #F44336;
+                opacity: 0.2;
+            }
+            QPushButton::hover {
+                background-color: #4CAF50;
+            }
+            transition-duration: 0.8s;
+            background-color: white;
+            color: black;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 10px;
+            """)
+        self.load_file_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.load_file_button.clicked.connect(self.load_file)
 
         self.compute_button = QPushButton("compute", self)
         self.compute_button.setEnabled(False)
         self.compute_button.setGeometry(10, 150, 80, 40)
+        self.compute_button.setStyleSheet("""
+            QPushButton::disabled {
+                background-color: #F44336;
+                color: #E7E7E7;
+                border: 2px solid #F44336;
+                opacity: 0.6;
+            }
+            QPushButton::hover {
+                background-color: #4CAF50;
+            }
+            transition-duration: 0.8s;
+            background-color: white;
+            color: black;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 10px;
+            """)
+        self.compute_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.compute_button.clicked.connect(self.compute_thread)
 
         self.figure = Figure(figsize=(5, 4), dpi=100)
@@ -68,19 +108,20 @@ class Window(QMainWindow):
 
     def load_file(self):
         """
-        load_file ... Function loads gpx file, parses it and stores the GPS points.s
+        load_file ... Function loads gpx file, parses it and stores the GPS points.
         """
         file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "./input", ".gpx Files (*.gpx);;All Files (*)")
-        self.input_points = self.app.load_xml(file_name)
-        self.compute_button.setEnabled(True)
-        text = ",\n".join("(%s,%s)" % tup for tup in self.input_points)
-        self.gpx_label.setText(text)
-        xpoints = [float(sublist[0]) for sublist in self.input_points]
-        ypoints = [float(sublist[1]) for sublist in self.input_points]
-        self.points = zip(xpoints, ypoints)
-        self.root_points = zip(xpoints, ypoints)
-        self.a, self.b = zip(*self.root_points)
-        self.plot()
+        if file_name != '':
+            self.input_points = self.app.load_xml(file_name)
+            self.compute_button.setEnabled(True)
+            text = ",\n".join("(%s,%s)" % tup for tup in self.input_points)
+            self.gpx_label.setText(text)
+            xpoints = [float(sublist[0]) for sublist in self.input_points]
+            ypoints = [float(sublist[1]) for sublist in self.input_points]
+            self.points = zip(xpoints, ypoints)
+            self.root_points = zip(xpoints, ypoints)
+            self.a, self.b = zip(*self.root_points)
+            self.plot()
 
     def compute_thread(self):
         thread1 = Thread(target=self.compute)
@@ -97,6 +138,7 @@ class Window(QMainWindow):
             and plots the result.
         """
         self.compute_button.setEnabled(False)
+        self.load_file_button.setEnabled(False)
         print("Creating weighted graph...")
         self.pathfinder.graph_progress_signal.connect(self.update_graph_progress)
         graph = self.pathfinder.create_graph(self.input_points)
@@ -115,6 +157,7 @@ class Window(QMainWindow):
         self.plot()
 
         self.gpx_label.setText("This is the minimal path through the given points. You can find the real path in output/result.gpx.")
+        self.load_file_button.setEnabled(True)
         print("DONE! You can find the result in output/result.gpx.")
 
     def plot(self):

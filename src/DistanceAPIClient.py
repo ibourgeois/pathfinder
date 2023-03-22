@@ -1,6 +1,7 @@
-import requests, json, random
+import requests, json, random, time
 
-class DistanceAPIClient:
+class DistanceAPIClient():
+
     def __init__(self, api_key, profile):
         self.api_key = api_key
         self.profile = profile
@@ -18,13 +19,27 @@ class DistanceAPIClient:
             start_lon = lon1,
             end_lat = lat2,
             end_lon = lon2)
+        response = self.make_request(req_url)
+        path = json.loads(response.text)
+        if 'features' in path:
+            return path['features'][0]['properties']['segments'][0]['distance']
+        else:
+            time.sleep(60)
+            response = self.make_request(req_url)
+            path = json.loads(response.text)
+            if 'features' in path:
+                return path['features'][0]['properties']['segments'][0]['distance']
+            else:
+                print(response.text)
+                raise SystemExit(e)
+
+    def make_request(self, req_url):
         try:
             response = requests.get(req_url)
         except requests.exceptions.RequestException as e:
             print(response.text)
-            raise SrystemExit(e)
-        path = json.loads(response.text)
-        return path['features'][0]['properties']['segments'][0]['distance']
+            raise SystemExit(e)
+        return response
 
     def get_random_distance(self):
         """
