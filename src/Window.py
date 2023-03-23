@@ -5,10 +5,8 @@ from src.Pathfinder import Pathfinder
 from src.DistanceAPIClient import DistanceAPIClient
 from src.App import App
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.qt_compat import QtWidgets
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import os, sys
+import os, random, time
 from dotenv import load_dotenv
 
 from threading import *
@@ -25,8 +23,8 @@ class Window(QMainWindow):
         self.resulting_points = None
         self.points = None
         self.root_points = None
-        self.a = (5.0, 4.04, 2.93, 1.73, 0.45, -0.85, -2.0, -2.93, -3.61, -3.99, -3.99, -3.61, -2.93, -2.0, -0.85, 0.45, 1.73, 2.93, 4.04, 5.0)
-        self.b = (0.0, 1.73, 2.93, 3.61, 3.99, 3.99, 3.61, 2.93, 1.73, 0.45, -0.85, -2.0, -2.93, -3.61, -3.99, -3.99, -3.61, -2.93, -1.73, 0)
+        self.a = tuple(random.random() for _ in range(7))
+        self.b = tuple(random.random() for _ in range(7))
         self.plot()
 
         if os.getenv("API_KEY") is None:
@@ -112,7 +110,7 @@ class Window(QMainWindow):
         """
         file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "./input", ".gpx Files (*.gpx);;All Files (*)")
         if file_name != '':
-            self.input_points = self.app.load_xml(file_name)
+            self.input_points = self.app.load_gpx(file_name)
             self.compute_button.setEnabled(True)
             text = ",\n".join("(%s,%s)" % tup for tup in self.input_points)
             self.gpx_label.setText(text)
@@ -125,12 +123,18 @@ class Window(QMainWindow):
 
     def compute_thread(self):
         thread1 = Thread(target=self.compute)
+        thread1.daemon = True
         thread1.start()
 
     def update_graph_progress(self, progress, points):
         self.points = points
         self.plot()
         self.gpx_label.setText(progress)
+    
+    def update_path_progress(self, progress, points):
+        x, y = zip(*self.app.prepare_resulting_points({'points': points}, self.input_points))
+        self.points = zip(y, x)
+        self.plot()
 
     def compute(self):
         """
@@ -145,7 +149,9 @@ class Window(QMainWindow):
         self.pathfinder.graph_progress_signal.disconnect(self.update_graph_progress)
 
         print("Solving the TSP...")
+        self.pathfinder.graph_progress_signal.connect(self.update_path_progress)
         result = self.pathfinder.brute_force_tsp(graph)
+        self.pathfinder.graph_progress_signal.disconnect(self.update_path_progress)
 
         print("Preparing result...")
         self.resulting_points = self.app.prepare_resulting_points(result, self.input_points)
@@ -174,7 +180,7 @@ class Window(QMainWindow):
             self.canvas.draw()
         else:
             self.ax.cla()
-            self.ax.set_xlim([min(self.a)-5, max(self.a)+5])
-            self.ax.set_ylim([min(self.b)-0.5, max(self.b)+0.5])
-            self.ax.plot(self.a, self.b, 'go-', ms = 5)
+            self.ax.set_xlim([min(self.a)-0.05, max(self.a)+0.05])
+            self.ax.set_ylim([min(self.b)-0.05, max(self.b)+0.05])
+            self.ax.plot(self.a, self.b, 'ro-', ms = 5)
             self.canvas.draw()

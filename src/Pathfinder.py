@@ -1,4 +1,4 @@
-import itertools, os
+import itertools, os, time
 import networkx as nx
 from src.DistanceAPIClient import DistanceAPIClient
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -50,7 +50,8 @@ class Pathfinder(QObject):
             if weight < min_weight:
                 min_weight = weight
                 min_permutation = permutation
-
+                self.graph_progress_signal.emit("...", list(permutation))
+                time.sleep(0.1)
         # Convert permutation to Hamiltonian circuit
         hamiltonian_circuit = list(min_permutation)
         hamiltonian_circuit.append(min_permutation[0])
