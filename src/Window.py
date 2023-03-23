@@ -18,6 +18,7 @@ class Window(QMainWindow):
 
         self.setWindowTitle("Pathfinder")
         self.setGeometry(100, 200, 800, 600)
+        self.setWindowIcon(QIcon('media/icon.png'))
         self.UiComponents()
         self.input_points = None
         self.resulting_points = None
