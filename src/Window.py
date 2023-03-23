@@ -71,7 +71,7 @@ class Window(QMainWindow):
         load_file ... Function loads gpx file, parses it and stores the GPS points.s
         """
         file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "./input", ".gpx Files (*.gpx);;All Files (*)")
-        self.input_points = self.app.load_xml(file_name)
+        self.input_points = self.app.load_gpx(file_name)
         self.compute_button.setEnabled(True)
         text = ",\n".join("(%s,%s)" % tup for tup in self.input_points)
         self.gpx_label.setText(text)
