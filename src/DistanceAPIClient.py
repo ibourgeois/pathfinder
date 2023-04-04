@@ -1,7 +1,6 @@
 import requests, json, random, time
 
 class DistanceAPIClient():
-
     def __init__(self, api_key, profile):
         self.api_key = api_key
         self.profile = profile
@@ -9,7 +8,7 @@ class DistanceAPIClient():
     def get_distance(self, lat1, lon1, lat2, lon2):
         """
         get_distance ... Function contacts the openrouteservice API and returns
-            the distance between two points.
+        the distance between two points.
         """
         req_url_prep = 'https://api.openrouteservice.org/v2/directions/{profile}?api_key={key}&start={start_lon},{start_lat}&end={end_lon},{end_lat}'
         req_url = req_url_prep.format(
@@ -44,14 +43,14 @@ class DistanceAPIClient():
     def get_random_distance(self):
         """
         get_random_distance ... Function returns random distance between two points.
-            Mainly for testing purposes.
+        Mainly for testing purposes.
         """
         return random.randrange(1, 100, 1)
 
     def generate_result_path(self, points):
         """
         generate_result_path ... Function contacts the openrouteservice API and
-            returns the route through given list of points.
+        returns the route through given list of points.
         """
         headers = {
         'Authorization': self.api_key

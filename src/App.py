@@ -6,7 +6,7 @@ class App:
     def load_gpx(self, file_name):
         """
         load_xml ... Function loads the input file and parses the xml. It returns
-            a list of points (a list of tuples).
+        a list of points (a list of tuples).
         """
         locations = list()
         if file_exists(file_name):
@@ -31,7 +31,7 @@ class App:
     def write_result(self, res_gpx, resulting_points, output_dir = 'output/result.gpx'):
         """
         write_result ... Function writes the result in the output gpx file.
-            It appends the initial waypoints to the resulting gpx file.
+        It appends the initial waypoints to the resulting gpx file.
         """
         res_gpx = re.sub(r'</gpx>$', '', res_gpx)
         for point in resulting_points[:-1]:
