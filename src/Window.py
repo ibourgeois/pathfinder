@@ -106,8 +106,8 @@ class Window(QMainWindow):
         """
         file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "./input", ".gpx Files (*.gpx);;All Files (*)")
         if file_name and os.path.isfile(file_name):
+            self.tsp_solver.graph.clear()
             self.input_points = self.app.load_gpx(file_name)
-            self.button_compute.setEnabled(True)
             text = ",\n".join("(%s,%s)" % tup for tup in self.input_points)
             self.gpx_label.setText(text)
             xpoints, ypoints = zip(*self.input_points)
@@ -115,6 +115,7 @@ class Window(QMainWindow):
             self.root_points = self.points[:]
             self.a, self.b = zip(*self.root_points)
             self.plot()
+            self.button_compute.setEnabled(True)
 
     def compute_thread(self):
         thread1 = Thread(target=self.compute)
