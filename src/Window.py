@@ -1,12 +1,11 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from src.Pathfinder import Pathfinder
-from src.DistanceAPIClient import DistanceAPIClient
+from src.TSPSolver import TSPSolver
 from src.App import App
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import os, random, time
+import os, random
 from dotenv import load_dotenv
 
 from threading import *
@@ -20,7 +19,9 @@ class Window(QMainWindow):
         self.setGeometry(100, 200, 800, 600)
         self.setWindowIcon(QIcon('media/icon.png'))
         self.load_stylesheet()
+        self.method = 'brute_force'
         self.UiComponents()
+        self.tsp_solver = TSPSolver()
         self.input_points = None
         self.resulting_points = None
         self.points = None
@@ -33,7 +34,6 @@ class Window(QMainWindow):
             self.gpx_label.setText("API_KEY not found. Please check if the .env file exists and the API_KEY variable is set to valid key to OpenRouteService API.")
             self.button_load_file.setEnabled(False)
         else:
-            self.pathfinder = Pathfinder()
             self.app = App()
     
     def load_stylesheet(self):
@@ -47,6 +47,18 @@ class Window(QMainWindow):
 
         self.gpx_label = QLabel("", self)
         self.gpx_label.setGeometry(10, 30, 600, 40)
+
+        toolbar = QButtonGroup(self)
+        self.method_brute_force = QRadioButton('brute force', self)
+        self.method_brute_force.setChecked(True)
+        self.method_brute_force.clicked.connect(self.set_method_to_brute_force)
+
+        self.method_nearest_neighbour = QRadioButton('nearest neighbour', self)
+        self.method_nearest_neighbour.setCheckable(True)
+        self.method_nearest_neighbour.clicked.connect(self.set_method_to_nearest_neighbour)
+
+        toolbar.addButton(self.method_brute_force)
+        toolbar.addButton(self.method_nearest_neighbour)
 
         self.button_load_file = QPushButton("load gpx", self)
         self.button_load_file.setGeometry(10, 70, 80, 40)
@@ -70,6 +82,8 @@ class Window(QMainWindow):
         layout = QVBoxLayout(central_widget)
         layout.addWidget(title_label)
         layout.addWidget(self.gpx_label)
+        layout.addWidget(self.method_brute_force)
+        layout.addWidget(self.method_nearest_neighbour)
         layout_buttons = QHBoxLayout()
         layout_buttons.addWidget(self.button_load_file)
         layout_buttons.addWidget(self.button_compute)
@@ -77,6 +91,14 @@ class Window(QMainWindow):
         layout.addLayout(layout_buttons)
         layout.addWidget(self.canvas)
         self.setCentralWidget(central_widget)
+
+    def set_method_to_brute_force(self):
+        self.method_nearest_neighbour.setChecked(False)
+        self.method = 'brute_force'
+
+    def set_method_to_nearest_neighbour(self):
+        self.method_brute_force.setChecked(False)
+        self.method = 'nearest_neighbour'
 
     def load_file(self):
         """
@@ -116,25 +138,28 @@ class Window(QMainWindow):
         """
         self.button_compute.setEnabled(False)
         self.button_load_file.setEnabled(False)
+        self.tsp_solver.set_method(self.method)
         print("Creating weighted graph...")
-        self.pathfinder.graph_progress_signal.connect(self.update_graph_progress)
-        self.pathfinder.create_graph(self.input_points)
-        self.pathfinder.graph_progress_signal.disconnect(self.update_graph_progress)
+        if self.tsp_solver.graph.number_of_nodes() == 0:
+            self.tsp_solver.graph_progress_signal.connect(self.update_graph_progress)
+            self.tsp_solver.create_graph(self.input_points)
+            self.tsp_solver.graph_progress_signal.disconnect(self.update_graph_progress)
 
         print("Solving the TSP...")
-        self.pathfinder.graph_progress_signal.connect(self.update_path_progress)
-        result = self.pathfinder.brute_force_tsp()
-        self.pathfinder.graph_progress_signal.disconnect(self.update_path_progress)
+        self.tsp_solver.graph_progress_signal.connect(self.update_path_progress)
+        result = self.tsp_solver.solve_tsp()
+        self.tsp_solver.graph_progress_signal.disconnect(self.update_path_progress)
 
         print("Preparing result...")
         self.resulting_points = self.app.prepare_resulting_points(result, self.input_points)
-        res_gpx = self.pathfinder.create_result_path(self.resulting_points)
+        res_gpx = self.tsp_solver.create_result_path(self.resulting_points)
         self.app.write_result(res_gpx, self.resulting_points)
         self.points = [(float(sublist[1]), float(sublist[0])) for sublist in self.resulting_points]
         self.plot()
 
         self.gpx_label.setText("This is the minimal path through the given points. You can find the real path in output/result.gpx.")
         self.button_load_file.setEnabled(True)
+        self.button_compute.setEnabled(True)
         print("DONE! You can find the result in output/result.gpx.")
 
     def plot(self):
