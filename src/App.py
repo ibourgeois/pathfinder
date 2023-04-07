@@ -18,13 +18,13 @@ class App:
             locations.append((child.attrib["lat"], child.attrib["lon"]))
         return locations
 
-    def prepare_resulting_points(self, res, points):
+    def prepare_resulting_points(self, computed_points, initial_points):
         """
         prepare_resulting_points ... Function prepares a list of the resulting points.
         """
         result_points = list()
-        for i in res['points']:
-            point = [float(points[i][1]), float(points[i][0])]
+        for i in computed_points:
+            point = [float(initial_points[i][1]), float(initial_points[i][0])]
             result_points.append(point)
         return result_points
 

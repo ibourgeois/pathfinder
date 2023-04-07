@@ -33,5 +33,6 @@ class BruteForceTSPSolver(TSPSolver, TSPAlgorithm, metaclass=TSPMeta):
         # Convert permutation to Hamiltonian circuit
         hamiltonian_circuit = list(min_permutation)
         hamiltonian_circuit.append(min_permutation[0])
+        min_weight += tsp_solver.graph.get_edge_data(hamiltonian_circuit[-2], hamiltonian_circuit[-1])["weight"]
 
         return {'points': hamiltonian_circuit, 'distance': min_weight}

@@ -20,6 +20,7 @@ class Window(QMainWindow):
         self.setWindowIcon(QIcon('media/icon.png'))
         self.load_stylesheet()
         self.method = 'brute_force'
+        self.selected_starting_point = 0
         self.UiComponents()
         self.tsp_solver = TSPSolver()
         self.input_points = None
@@ -60,6 +61,12 @@ class Window(QMainWindow):
         toolbar.addButton(self.method_brute_force)
         toolbar.addButton(self.method_nearest_neighbour)
 
+        self.dropdown_menu = QComboBox(self)
+        self.dropdown_menu.setFixedWidth(80)
+        self.dropdown_menu.addItem('random')
+        self.dropdown_menu.setEnabled(False)
+        self.dropdown_menu.currentIndexChanged.connect(self.selection_changed)
+
         self.button_load_file = QPushButton("load gpx", self)
         self.button_load_file.setGeometry(10, 70, 80, 40)
         self.button_load_file.setStyleSheet(self.stylesheet)
@@ -84,6 +91,7 @@ class Window(QMainWindow):
         layout.addWidget(self.gpx_label)
         layout.addWidget(self.method_brute_force)
         layout.addWidget(self.method_nearest_neighbour)
+        layout.addWidget(self.dropdown_menu)
         layout_buttons = QHBoxLayout()
         layout_buttons.addWidget(self.button_load_file)
         layout_buttons.addWidget(self.button_compute)
@@ -94,11 +102,21 @@ class Window(QMainWindow):
 
     def set_method_to_brute_force(self):
         self.method_nearest_neighbour.setChecked(False)
+        self.dropdown_menu.setEnabled(False)
         self.method = 'brute_force'
 
     def set_method_to_nearest_neighbour(self):
         self.method_brute_force.setChecked(False)
+        self.dropdown_menu.setEnabled(True)
         self.method = 'nearest_neighbour'
+
+    def populate_dropdown_menu(self):
+        if len(self.input_points) > 0:
+            for i in range(0, len(self.input_points)):
+                self.dropdown_menu.addItem('bod ' + str(i+1))
+
+    def selection_changed(self):
+        self.selected_starting_point = self.dropdown_menu.currentIndex()
 
     def load_file(self):
         """
@@ -108,8 +126,9 @@ class Window(QMainWindow):
         if file_name and os.path.isfile(file_name):
             self.tsp_solver.graph.clear()
             self.input_points = self.app.load_gpx(file_name)
-            text = ",\n".join("(%s,%s)" % tup for tup in self.input_points)
-            self.gpx_label.setText(text)
+            self.populate_dropdown_menu()
+            # text = ",\n".join("(%s,%s)" % tup for tup in self.input_points)
+            self.gpx_label.setText(f"You have loaded {len(self.input_points)} points.")
             xpoints, ypoints = zip(*self.input_points)
             self.points = list(zip(map(float, xpoints), map(float, ypoints)))
             self.root_points = self.points[:]
@@ -128,7 +147,7 @@ class Window(QMainWindow):
         self.gpx_label.setText(progress)
     
     def update_path_progress(self, progress, points):
-        x, y = zip(*self.app.prepare_resulting_points({'points': points}, self.input_points))
+        x, y = zip(*self.app.prepare_resulting_points(points, self.input_points))
         self.points = zip(y, x)
         self.plot()
 
@@ -140,6 +159,7 @@ class Window(QMainWindow):
         self.button_compute.setEnabled(False)
         self.button_load_file.setEnabled(False)
         self.tsp_solver.set_method(self.method)
+        self.tsp_solver.set_starting_point(self.selected_starting_point)
         print("Creating weighted graph...")
         if self.tsp_solver.graph.number_of_nodes() == 0:
             self.tsp_solver.graph_progress_signal.connect(self.update_graph_progress)
@@ -150,15 +170,15 @@ class Window(QMainWindow):
         self.tsp_solver.graph_progress_signal.connect(self.update_path_progress)
         result = self.tsp_solver.solve_tsp()
         self.tsp_solver.graph_progress_signal.disconnect(self.update_path_progress)
-
+        distance = result["distance"]
         print("Preparing result...")
-        self.resulting_points = self.app.prepare_resulting_points(result, self.input_points)
+        self.resulting_points = self.app.prepare_resulting_points(result["points"], self.input_points)
         res_gpx = self.tsp_solver.create_result_path(self.resulting_points)
         self.app.write_result(res_gpx, self.resulting_points)
         self.points = [(float(sublist[1]), float(sublist[0])) for sublist in self.resulting_points]
         self.plot()
-
-        self.gpx_label.setText("This is the minimal path through the given points. You can find the real path in output/result.gpx.")
+        res_distance = round(distance/1000, 2)
+        self.gpx_label.setText(f"This is the optimal path through the given points. Distance traveled is {res_distance} km. You can find the real path in output/result.gpx.")
         self.button_load_file.setEnabled(True)
         self.button_compute.setEnabled(True)
         print("DONE! You can find the result in output/result.gpx.")
@@ -170,14 +190,17 @@ class Window(QMainWindow):
         if self.points is not None:
             x, y = zip(*self.points)
             self.ax.cla()
-            self.ax.plot(self.a, self.b, 'ko')
-            self.ax.plot(x, y, 'ro-', ms = 10)
-            self.ax.set_xlim([min(self.a)-0.005, max(self.a)+0.005])
-            self.ax.set_ylim([min(self.b)-0.005, max(self.b)+0.005])
-            self.canvas.draw()
+            self.ax.set_xlim([min(self.a)-0.008, max(self.a)+0.008])
+            self.ax.set_ylim([min(self.b)-0.008, max(self.b)+0.008])
+            self.ax.plot(self.a, self.b, 'ko', ms = 10)
+            self.ax.plot(x, y, 'go-', ms = 15)
+            for i in range(0, len(self.a)):
+                label = str(i+1)
+                x, y = self.a[i], self.b[i]
+                self.ax.annotate(label, xy=(x, y), xytext=(self.a[i]-0.00025, self.b[i]-0.0015), color='white')
         else:
             self.ax.cla()
             self.ax.set_xlim([min(self.a)-0.05, max(self.a)+0.05])
             self.ax.set_ylim([min(self.b)-0.05, max(self.b)+0.05])
             self.ax.plot(self.a, self.b, 'ro-', ms = 5)
-            self.canvas.draw()
+        self.canvas.draw()

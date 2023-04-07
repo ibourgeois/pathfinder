@@ -11,6 +11,7 @@ class TSPSolver(QObject):
         self.distance_api = DistanceAPIClient(os.getenv("API_KEY"), 'foot-walking')
         self.graph = nx.Graph()
         self.method = 'brute_force'
+        self.starting_point = 0
 
     def create_graph(self, points) -> None:
         """
@@ -48,7 +49,7 @@ class TSPSolver(QObject):
         match self.method:
             case 'nearest_neighbour':
                 from .NearestNeighbourTSPSolver import NearestNeighbourTSPSolver
-                self.tsp_solver = NearestNeighbourTSPSolver()
+                self.tsp_solver = NearestNeighbourTSPSolver(self.starting_point)
             case 'brute_force':
                 from .BruteForceTSPSolver import BruteForceTSPSolver
                 self.tsp_solver = BruteForceTSPSolver()
@@ -61,3 +62,6 @@ class TSPSolver(QObject):
     
     def set_method(self, method):
         self.method = method
+    
+    def set_starting_point(self, starting_point):
+        self.starting_point = starting_point

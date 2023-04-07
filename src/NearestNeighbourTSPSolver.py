@@ -1,4 +1,5 @@
 import sys, time
+from random import randrange
 from src.TSPSolver import TSPSolver
 from src.TSPAlgorithm import TSPAlgorithm
 
@@ -6,6 +7,8 @@ class TSPMeta(type(TSPSolver), type(TSPAlgorithm)):
     pass
 
 class NearestNeighbourTSPSolver(TSPSolver, TSPAlgorithm, metaclass=TSPMeta):
+    def __init__(self, starting_point):
+        self.starting_point = starting_point
 
     def create_graph(self, points) -> None:
         return super().create_graph(points)
@@ -16,7 +19,10 @@ class NearestNeighbourTSPSolver(TSPSolver, TSPAlgorithm, metaclass=TSPMeta):
             given weighted graph using the nearest neighbour method.
         """
         visited = set()
-        start = 0
+        if self.starting_point == 0:
+            start = randrange(0, len(tsp_solver.graph.nodes())-1)
+        else:
+            start = self.starting_point - 1
         visited.add(start)
         path = [start]
         sum_distance = 0
@@ -38,5 +44,5 @@ class NearestNeighbourTSPSolver(TSPSolver, TSPAlgorithm, metaclass=TSPMeta):
             time.sleep(0.1)
 
         path.append(path[0])
-        # Return best solution
+        sum_distance += tsp_solver.graph.get_edge_data(path[-2], path[-1])["weight"]
         return {'points': path, 'distance': sum_distance}
