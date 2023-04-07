@@ -1,14 +1,17 @@
-import itertools, os, time
 import networkx as nx
 from src.DistanceAPIClient import DistanceAPIClient
 from PyQt5.QtCore import QObject, pyqtSignal
+import itertools, os
 
-class Pathfinder(QObject):
+class TSPSolver(QObject):
     graph_progress_signal = pyqtSignal(str, list)
+
     def __init__(self):
         super().__init__()
         self.distance_api = DistanceAPIClient(os.getenv("API_KEY"), 'foot-walking')
         self.graph = nx.Graph()
+        self.method = 'brute_force'
+        self.starting_point = 0
 
     def create_graph(self, points) -> None:
         """
@@ -37,33 +40,28 @@ class Pathfinder(QObject):
             distances[(v, u)] = weight
         points = [[float(ux), float(uy)], [float(vx), float(vy)]]
         return weight, points
-
-    def brute_force_tsp(self) -> dict:
-        """
-        brute_force_tsp ... Function solves the traveling salesman problem for
-            given weighted graph using the brute force method.
-        """
-        # Generate all possible permutations of node indices
-        nodes_count = self.graph.number_of_nodes()
-        node_indices = range(nodes_count)
-        all_permutations = itertools.permutations(node_indices)
-
-        # Find permutation with minimum total weight
-        min_weight = float('inf')
-        min_permutation = None
-        for permutation in all_permutations:
-            weight = sum(self.graph[permutation[i]][permutation[(i+1) % nodes_count]]['weight'] for i in range(nodes_count))
-            if weight < min_weight:
-                min_weight = weight
-                min_permutation = permutation
-                self.graph_progress_signal.emit("...", list(permutation))
-                time.sleep(0.1)
-        # Convert permutation to Hamiltonian circuit
-        hamiltonian_circuit = list(min_permutation)
-        hamiltonian_circuit.append(min_permutation[0])
-
-        return {'points': hamiltonian_circuit, 'distance': min_weight}
-
+    
     def create_result_path(self, resulting_points):
         res_gpx = self.distance_api.generate_result_path(resulting_points)
         return res_gpx
+
+    def solve_tsp(self):
+        match self.method:
+            case 'nearest_neighbour':
+                from .NearestNeighbourTSPSolver import NearestNeighbourTSPSolver
+                self.tsp_solver = NearestNeighbourTSPSolver(self.starting_point)
+            case 'brute_force':
+                from .BruteForceTSPSolver import BruteForceTSPSolver
+                self.tsp_solver = BruteForceTSPSolver()
+            case _:
+                self.solve_tsp_problem()
+        return self.tsp_solver.solve_tsp_problem(self)
+    
+    def solve_tsp_problem(self):
+        return {'points': [], 'distance': 0}
+    
+    def set_method(self, method):
+        self.method = method
+    
+    def set_starting_point(self, starting_point):
+        self.starting_point = starting_point
