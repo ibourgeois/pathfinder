@@ -13,7 +13,7 @@ class NearestNeighbourTSPSolver(TSPSolver, TSPAlgorithm, metaclass=TSPMeta):
     def create_graph(self, points) -> None:
         return super().create_graph(points)
 
-    def solve_tsp_problem(self, tsp_solver):
+    def solve(self, tsp_solver):
         """
         brute_force_tsp ... Function solves the traveling salesman problem for
             given weighted graph using the nearest neighbour method.

@@ -10,7 +10,7 @@ class BruteForceTSPSolver(TSPSolver, TSPAlgorithm, metaclass=TSPMeta):
     def create_graph(self, points) -> None:
         return super().create_graph(points)
 
-    def solve_tsp_problem(self, tsp_solver) -> dict:
+    def solve(self, tsp_solver) -> dict:
         """
         brute_force_tsp ... Function solves the traveling salesman problem for
             given weighted graph using the brute force method.
@@ -30,9 +30,9 @@ class BruteForceTSPSolver(TSPSolver, TSPAlgorithm, metaclass=TSPMeta):
                 min_permutation = permutation
                 tsp_solver.graph_progress_signal.emit("...", list(permutation))
                 time.sleep(0.1)
+
         # Convert permutation to Hamiltonian circuit
         hamiltonian_circuit = list(min_permutation)
         hamiltonian_circuit.append(min_permutation[0])
-        min_weight += tsp_solver.graph.get_edge_data(hamiltonian_circuit[-2], hamiltonian_circuit[-1])["weight"]
 
         return {'points': hamiltonian_circuit, 'distance': min_weight}

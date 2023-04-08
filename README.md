@@ -1,14 +1,23 @@
 # Pathfinder
 
-The purpose of this project is to find the shortest path through given set of points. It uses the brute force solution of TSP (traveling salesman problem) to solve this task. The complexity of this approach is O(n!), therefore, in further versions, I plan to implement some other algorithms in order to solve the problem more effectively.
+This program performs the computation of the travelling salesman problem on a given set of GPS points. So far, the computation is implemented using brute force and nearest neighbor method.
 
 ## Usage
 1. Create `.env` file in the working directory of this project.
 2. Add the `API_KEY` variable to this file. You can generate your own api key at https://openrouteservice.org/.
-3. Create a set of points, export the set as gpx and save it as `export.gpx` in the `input` directory.
+3. Create a set of gps points, export the set as .gpx file and save it in the `input` directory.
 4. Run the program: `python main.py`.
-5. You will find the result as a gpx file in the `output` directory.
+5. Follow the instructions in the GUI.
+6. You will find the result as a .gpx file in the `output` directory.
 
 ## Notes
 - This program uses the openrouteservice API. You have to generate an API key in order to make this program work.
 - The output of the openrouteservice API is only pure route. The waypoints are added manually from the input file.
+
+## Background
+
+Whenever I traveled to a city, I always found a few places I wanted to visit. Then I needed to find the optimal route that I could take to visit all those places. That's how the idea for this project was born.
+
+I found an API to calculate distances between GPS points. Then I implemented a simple solution using brute force method. After that, I decided to add a GUI to practice working with the PyQt5 library. Then I added a graphical representation of the calculation and the resulting path. This was followed by an extension to perform the shortest path calculation using the nearest neighbor method, which was also the first solution method I thought of.
+
+The next steps are, for example, to implement other methods to solve the TSP or to represent the solution directly in the integrated map.
