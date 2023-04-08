@@ -6,5 +6,5 @@ class TSPAlgorithm(ABC):
         pass
 
     @abstractmethod
-    def solve_tsp_problem(self, graph):
+    def solve(self, graph):
         pass

@@ -54,10 +54,10 @@ class TSPSolver(QObject):
                 from .BruteForceTSPSolver import BruteForceTSPSolver
                 self.tsp_solver = BruteForceTSPSolver()
             case _:
-                self.solve_tsp_problem()
-        return self.tsp_solver.solve_tsp_problem(self)
+                self.solve()
+        return self.tsp_solver.solve(self)
     
-    def solve_tsp_problem(self):
+    def solve(self):
         return {'points': [], 'distance': 0}
     
     def set_method(self, method):

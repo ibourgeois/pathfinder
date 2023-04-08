@@ -16,7 +16,7 @@ class Window(QMainWindow):
         load_dotenv()
 
         self.setWindowTitle("Pathfinder")
-        self.setGeometry(100, 200, 800, 600)
+        self.setGeometry(100, 200, 1000, 600)
         self.setWindowIcon(QIcon('media/icon.png'))
         self.load_stylesheet()
         self.method = 'brute_force'
@@ -43,11 +43,14 @@ class Window(QMainWindow):
         self.setStyleSheet(self.stylesheet)
 
     def UiComponents(self):
-        title_label = QLabel("This is Pathfinder. Start with importing the gpx file.\n If the window \"freezes\" while creating the graph, don't panic. The API has requests per minute limit, so we are just waiting 60 seconds to renew the limit.", self)
+        title_label = QLabel("Begin with importing the gpx file.\nIf the program stops while creating the graph, don't panic.\nThe API has requests per minute limit, so we are just waiting 60 seconds to renew the limit.", self)
         title_label.setGeometry(10, 10, 600, 40)
 
         self.gpx_label = QLabel("", self)
         self.gpx_label.setGeometry(10, 30, 600, 40)
+
+        self.method_label = QLabel("Choose the computing method. In case of the nearest neighbour method, you can choose also the starting point.", self)
+        self.method_label.setGeometry(10, 50, 600, 40)
 
         toolbar = QButtonGroup(self)
         self.method_brute_force = QRadioButton('brute force', self)
@@ -89,6 +92,7 @@ class Window(QMainWindow):
         layout = QVBoxLayout(central_widget)
         layout.addWidget(title_label)
         layout.addWidget(self.gpx_label)
+        layout.addWidget(self.method_label)
         layout.addWidget(self.method_brute_force)
         layout.addWidget(self.method_nearest_neighbour)
         layout.addWidget(self.dropdown_menu)
@@ -178,7 +182,7 @@ class Window(QMainWindow):
         self.points = [(float(sublist[1]), float(sublist[0])) for sublist in self.resulting_points]
         self.plot()
         res_distance = round(distance/1000, 2)
-        self.gpx_label.setText(f"This is the optimal path through the given points. Distance traveled is {res_distance} km. You can find the real path in output/result.gpx.")
+        self.gpx_label.setText(f"This is the optimal path through the given points.\nDistance traveled is {res_distance} km. You can find the real path in output/result.gpx.")
         self.button_load_file.setEnabled(True)
         self.button_compute.setEnabled(True)
         print("DONE! You can find the result in output/result.gpx.")

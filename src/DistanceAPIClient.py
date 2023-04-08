@@ -1,6 +1,7 @@
 import requests, json, random, time
 
 class DistanceAPIClient():
+    
     def __init__(self, api_key, profile):
         self.api_key = api_key
         self.profile = profile
@@ -30,7 +31,7 @@ class DistanceAPIClient():
                 return path['features'][0]['properties']['segments'][0]['distance']
             else:
                 print(response.text)
-                raise SystemExit(e)
+                raise SystemExit()
 
     def make_request(self, req_url):
         try:
