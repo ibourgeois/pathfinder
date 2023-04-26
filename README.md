@@ -3,14 +3,32 @@
 This program performs the computation of the travelling salesman problem on a given set of GPS points. So far, the computation is implemented using brute force and nearest neighbor method.
 
 ## Usage
+
 1. Create `.env` file in the working directory of this project.
-2. Add the `API_KEY` variable to this file. You can generate your own api key at https://openrouteservice.org/.
+2. Add the `API_KEY` variable to this file. You can generate your own api key at [https://openrouteservice.org](https://openrouteservice.org/).
 3. Create a set of gps points, export the set as .gpx file and save it in the `input` directory.
 4. Run the program: `python main.py`.
 5. Follow the instructions in the GUI.
 6. You will find the result as a .gpx file in the `output` directory.
 
+## Docker Usage
+
+Build the image:
+
+```bash
+docker build -t pathfinder .
+```
+
+Run the container:
+
+```bash
+docker run -it --rm -e API_KEY=<your_api_key> -v ${pwd}/input:/app/input -v ${pwd}/output:/app/output pathfinder
+```
+
+> Note: Replace `<your_api_key>` with your API key, which you can generate your own at [https://openrouteservice.org](https://openrouteservice.org/).
+
 ## Notes
+
 - This program uses the openrouteservice API. You have to generate an API key in order to make this program work.
 - The output of the openrouteservice API is only pure route. The waypoints are added manually from the input file.
 
