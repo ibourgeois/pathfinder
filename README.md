@@ -21,8 +21,16 @@ docker build -t pathfinder .
 
 Run the container:
 
+### for macOS
+
 ```bash
-docker run -it --rm -e API_KEY=<your_api_key> -v ${pwd}/input:/app/input -v ${pwd}/output:/app/output pathfinder
+docker run -it --rm \
+    -e API_KEY=<your_api_key> \
+    -e DISPLAY=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}'):0 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v ${PWD}/input:/app/input \
+    -v ${PWD}/output:/app/output \
+    pathfinder
 ```
 
 > Note: Replace `<your_api_key>` with your API key, which you can generate your own at [https://openrouteservice.org](https://openrouteservice.org/).
